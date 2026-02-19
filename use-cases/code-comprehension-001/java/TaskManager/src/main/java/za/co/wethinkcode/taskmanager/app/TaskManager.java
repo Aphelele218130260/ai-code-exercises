@@ -27,9 +27,11 @@ public class TaskManager {
 
     public String createTask(String title, String description, int priorityValue,
                              String dueDateStr, List<String> tags) {
+        //converts an int into a TaskPriority enum
         TaskPriority priority = TaskPriority.fromValue(priorityValue);
         LocalDateTime dueDate = null;
 
+        //the following checks if the date was provided and converts it to LocalDateTime usin LocalTime.Max
         if (dueDateStr != null && !dueDateStr.isEmpty()) {
             try {
                 LocalDate localDate = LocalDate.parse(dueDateStr, DateTimeFormatter.ISO_DATE);
@@ -39,17 +41,37 @@ public class TaskManager {
                 return null;
             }
         }
-
+        //It create Task object
         Task task = new Task(title, description, priority, dueDate, tags);
         return getStorage().addTask(task);
     }
 
-    public List<Task> listTasks(String statusFilter, Integer priorityFilter, boolean showOverdue) {
+    /*public List<Task> listTasks(String statusFilter, Integer priorityFilter, boolean showOverdue) {
         if (showOverdue) {
             return getStorage().getOverdueTasks();
-        }
+        }*/
 
-        if (statusFilter != null) {
+    public List<Task> listTasks(StringstatusFilter, Integer priorityFilter, boolean showOverdue) {
+        List<Task> tasks;
+
+    if (showOverdue) {
+        tasks = getStorage().getOverdueTasks();
+    } else if (statusFilter != null) {
+        TaskStatus status = TaskStatus.fromValue(statusFilter);
+        tasks = getStorage().getTasksByStatus(status);
+    } else if (priorityFilter != null) {
+        TaskPriority priority = TaskPriority.fromValue(priorityFilter);
+        tasks = getStorage().getTasksByPriority(priority);
+    } else {
+        tasks = getStorage().getAllTasks();
+    }
+
+    tasks.forEach(task -> task.evaluateAbandonment(LocalDate.now()));
+
+    return tasks;
+
+
+        /*if (statusFilter != null) {
             TaskStatus status = TaskStatus.fromValue(statusFilter);
             return getStorage().getTasksByStatus(status);
         }
@@ -59,11 +81,13 @@ public class TaskManager {
             return getStorage().getTasksByPriority(priority);
         }
 
-        return getStorage().getAllTasks();
+        return getStorage().getAllTasks();*/
     }
-
+//this method is resposible for updating a task satus
     public boolean updateTaskStatus(String taskId, String newStatusValue) {
+        //Convert string to enum
         TaskStatus newStatus = TaskStatus.fromValue(newStatusValue);
+        //retrieve task from storage
         Task task = getStorage().getTask(taskId);
         if (task != null) {
             task.setStatus(newStatus);

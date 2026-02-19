@@ -166,3 +166,18 @@ public class Task {
         return this.tags.remove(tag);
     }
 }
+    public void markAsAbandonment(){
+    if (dueDate == null)
+        return;
+
+    if (status == TaskStatus.DONE)
+        return;
+
+    if (priority == TaskPriority.HIGH)
+        return;
+
+    if (dueDate.plusDays(7).isBefore(LocalDate.now())){
+        this.status = TaskStatus.ABANDONED;
+        this.updatedAt = LocalDateTime.now();
+    }
+    }

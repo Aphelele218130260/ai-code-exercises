@@ -7,6 +7,7 @@ public enum TaskPriority {
     HIGH(3),
     URGENT(4);
 
+
     private final int value;
 
     TaskPriority(int value) {
